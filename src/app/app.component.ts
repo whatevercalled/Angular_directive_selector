@@ -1,7 +1,7 @@
-import { Component,TemplateRef,ViewChildren,ViewChild,  QueryList,AfterViewInit, viewChild, viewChildren, } from '@angular/core';
+import { Component,ViewChildren,signal,computed, QueryList,AfterViewInit, viewChild, viewChildren, ViewChild, } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CarouselPageDirective } from './carousel-page.directive';
-import { CommonModule,NgTemplateOutlet } from '@angular/common';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
@@ -10,36 +10,33 @@ import { CommonModule,NgTemplateOutlet } from '@angular/common';
   imports: [RouterOutlet,CommonModule,CarouselPageDirective],
   // templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  template: ` <ng-template appCarouselPage #555666 > Page 1 </ng-template>
+  template: ` <ng-template appCarouselPage> Page 1 </ng-template>
     <ng-template appCarouselPage> Page 2 </ng-template>
     <ng-template appCarouselPage> Page 3 </ng-template>
-    <ng-container *ngTemplateOutlet="displayPage"></ng-container>
-    <button (click)="printElements">123232</button>`
+    <ng-container *ngTemplateOutlet="displayPage()"></ng-container>
+    <button (click)="onSwitchPageClick()">切換頁面</button>
+    `
 
 })
-export class AppComponent implements AfterViewInit{
-  // @ViewChildren('555666') somethingArr:any;
-  // @ViewChild('555666') something:any;
-  @ViewChildren(CarouselPageDirective) carouselPages!:QueryList<CarouselPageDirective>;
-  displayPage!: TemplateRef<any>;
-  index = 0;
- 
-  setDisplayPage() {
-    console.log(this.carouselPages);
-    this.displayPage = this.carouselPages.find(
-      (_, index) => index === this.index
+export class AppComponent{
+
+
+  carouselPages=viewChildren<CarouselPageDirective>(CarouselPageDirective); //signal queries
+
+  index = signal(0);
+  
+  displayPage=computed(()=>{
+
+    return this.carouselPages()?.find(
+      (_, index) => index === this.index()
     )!.templateRef;
+  })
+  onSwitchPageClick(){
+
+    this.index.update((x)=>{
+      return (x+1)%3; //最多只有三頁
+    })
   }
- 
-  ngAfterViewInit() {
-    // this.setDisplayPage();
-    // console.log(this.somethingArr);
-    // console.log(this.something);
-    console.log(this.carouselPages);
-    
-  }
-  printElements(){
-    console.log(this.carouselPages) // Empty
-  }
+
   title = 'yunshin_templateSyntax';
 }
